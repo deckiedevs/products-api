@@ -1,8 +1,9 @@
 const db = require('../config/connection');
 
 class Product {
-  getAll({ sort }) {
+  getAll({ category, sort }) {
     let orderBy = 'ORDER BY ';
+    let where = category ? `WHERE category_id = ${parseInt(category)}` : '';
 
     switch(sort) {
       case 'date':
@@ -23,6 +24,7 @@ class Product {
       COALESCE(AVG(reviews.rating), 0)::NUMERIC(2,1) AS rating 
       FROM products
       LEFT JOIN reviews ON products.id = reviews.product_id
+      ${where}
       GROUP BY (products.id) ${orderBy}`;
 
     return db.query(query);
@@ -39,19 +41,25 @@ class Product {
     return db.query(query, [ id ]);
   }
 
-  create({ name, description, price, stock }) {
+  create({ name, description, price, quantity }) {
     return db.query(
-      `INSERT INTO products (name, description, price, stock) 
+      `INSERT INTO products (name, description, price, quantity) 
       VALUES ($1, $2, $3, $4) RETURNING *, 0 AS rating`, 
-      [ name, description, price, stock ]
+      [ name, description, price, quantity ]
     );
   }
 
-  update({ name, description, price, stock, id }) {
+  update({ name, description, price, quantity, id }) {
     return db.query(
       `UPDATE products SET name = $1, description = $2, price = $3,
-      stock = $4 WHERE id = $5`, 
-      [ name, description, price, stock, id ]
+      quantity = $4 WHERE id = $5`, 
+      [ name, description, price, quantity, id ]
+    );
+  }
+
+  updateQuantity({ quantity, id }) {
+    return db.query('UPDATE products SET quantity = $1 WHERE id = $2',
+      [ quantity, id ]
     );
   }
 
