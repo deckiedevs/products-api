@@ -1,4 +1,6 @@
 const express = require('express');
+const swaggerUi = require('swagger-ui-express');
+const swaggerDoc= require('./swagger.json');
 const routes = require('./controllers');
 
 const app = express();
@@ -8,6 +10,16 @@ app.use(express.json());
 app.use(express.urlencoded({ extended: true }));
 
 app.use(routes);
+
+const swaggerOptions = {
+  defaultModelsExpandDepth: -1
+};
+
+app.use(
+  '/docs',
+  swaggerUi.serveFiles(swaggerDoc, { swaggerOptions }),
+  swaggerUi.setup(swaggerDoc)
+);
 
 app.listen(PORT, () => {
   console.log(`Server started on port: ${PORT}`);
